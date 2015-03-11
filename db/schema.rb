@@ -15,15 +15,15 @@ ActiveRecord::Schema.define(version: 20140219222410) do
 
   create_table "orders", force: true do |t|
     t.string   "aasm_state"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "product_orders", force: true do |t|
     t.integer  "product_id"
     t.integer  "order_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_index "product_orders", ["order_id"], name: "index_product_orders_on_order_id"
@@ -33,9 +33,9 @@ ActiveRecord::Schema.define(version: 20140219222410) do
     t.string   "name"
     t.integer  "serial_number"
     t.integer  "cost_in_cents"
-    t.integer  "amount_in_stock"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.integer  "amount_in_stock", default: 0
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
   end
 
 end

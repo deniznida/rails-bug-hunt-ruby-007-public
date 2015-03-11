@@ -2,11 +2,12 @@ require 'spec_helper'
 
 describe Order do
   let(:order) { create(:order) }
-  let(:product) { create(:product, cost_in_cents: 100000) }
+  let(:product) { create(:product, cost_in_cents: 100000)}
 
   describe 'total cost in cents' do
     it 'is the sum of all the products on the order' do
-      pending 'i can add trust me'
+      order.products << product
+      expect(order.total_cost_in_cents).to eq(100000)
     end
   end
 
@@ -29,24 +30,29 @@ describe Order do
 
     context 'without products' do
       it 'doesnt transition to processing' do
-        pending 'why would a sane rational user ever submit an empty order'
+        expect(order.has_products?).to eq false
       end
     end
   end
 
   describe 'shipping an order' do
     it 'transitions to the shipped state' do
-      pending 'it is beneath me to test something so simple'
+      order.products << product
+      order.aasm_state = "processing"
+      order.ship!
+      expect(order.shipped?).to eq true
     end
   end
 
   describe 'adding a product' do
     context 'to an unsubmitted order' do
       context 'with remaining stock' do
-        let(:product) { create(:product, amount_in_stock: 5) }
+        let(:order) { create(:order) }
+        let(:product) { create(:product, amount_in_stock: 5, :cost_in_cents => 50) }
 
         it 'increases the total cost of the order' do
-          pending 'the accountants will notice this if its broken anyway'
+          order.products << product
+          expect(order.total_cost_in_cents).to eq(50)
         end
 
         it 'adds the product to the order' do
@@ -64,8 +70,12 @@ describe Order do
       context 'with no remaining stock' do
         let(:product) { create(:product, amount_in_stock: 0) }
 
+        before do
+          expect { order.products << product }.to raise_error(ActiveRecord::RecordInvalid)
+        end
+        
         it 'does not add the product to the order' do
-          pending 'im sure we could find some extras lying around'
+          expect(order.products).to_not include(product)
         end
 
         it 'does not decrement the amount of product in stock' do
@@ -90,7 +100,7 @@ describe Order do
       end
 
       it 'does not decrement the products in stock' do
-        pending 'need to get to the ping pong tournament'
+        expect(product.amount_in_stock).to eq(5)
       end
     end
   end
@@ -118,6 +128,7 @@ describe Order do
         order.submit!
         order
       end
+      let(:stock) {order.products.first.amount_in_stock}
 
       it 'raises an exception' do
         product = order.products.first
@@ -125,7 +136,7 @@ describe Order do
       end
 
       it 'does not decrement the products in stock' do
-        pending 'an exception is being raised so this shouldnt happen'
+        expect(order.products.first.amount_in_stock).to eq(stock)
       end
     end
   end
